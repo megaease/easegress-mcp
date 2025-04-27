@@ -1,14 +1,9 @@
 import os
 import httpx
-from easegress_mcp.settings import ENV_AUTHTOKEN
 
 
 def get_header():
-    token = os.getenv(ENV_AUTHTOKEN, "")
-    if token == "":
-        raise ValueError(f"Environment variable {ENV_AUTHTOKEN} not set")
-    headers = {"Authorization": f"Bearer {token}"}
-    return headers
+    return {}
 
 
 def get_async_client():
