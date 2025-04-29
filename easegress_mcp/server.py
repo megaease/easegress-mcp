@@ -40,22 +40,22 @@ async def serve():
             Tool(
                 name=EasegressTools.CreateHTTPServer,
                 description="Create an HTTP server.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
+                inputSchema=schema.HTTPServerSchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.DeleteHTTPServer,
                 description="Delete an HTTP server.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
+                inputSchema=schema.NameSchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.UpdateHTTPServer,
                 description="Update an HTTP server.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
+                inputSchema=schema.HTTPServerSchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.GetHTTPServer,
                 description="Get an HTTP server.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
+                inputSchema=schema.NameSchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.ListProxyPipelines,
@@ -80,13 +80,14 @@ async def serve():
             Tool(
                 name=EasegressTools.GetProxyPipeline,
                 description="Get a Proxy Pipeline.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
+                inputSchema=schema.NameSchema.model_json_schema(),
             ),
         ]
 
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> List[TextContent]:
         logger.info(f"Call tool: {name}, arguments: {arguments}")
+
         if name == EasegressTools.ListHTTPServers:
             resp = await egapis.list_HTTPServers()
             return utils.to_textcontent(resp)
