@@ -6,24 +6,18 @@ from mcp.server import Server
 from mcp.types import TextContent, Tool
 from mcp.server.stdio import stdio_server
 
-from easegress_mcp import egapis
+from easegress_mcp import tools
 from easegress_mcp import utils
 from easegress_mcp import schema
 from easegress_mcp.log import logger
 
 
 class EasegressTools(str, Enum):
-    ListHTTPServers = "list_HTTPServers"
-    CreateHTTPServer = "create_HTTPServer"
-    DeleteHTTPServer = "delete_HTTPServer"
-    UpdateHTTPServer = "update_HTTPServer"
-    GetHTTPServer = "get_HTTPServer"
-
-    ListProxyPipelines = "list_ProxyPipelines"
-    CreateProxyPipeline = "create_ProxyPipeline"
-    DeleteProxyPipeline = "delete_ProxyPipeline"
-    UpdateProxyPipeline = "update_ProxyPipeline"
-    GetProxyPipeline = "get_ProxyPipeline"
+    ListHTTPReverseProxies = "ListHTTPReverseProxies"
+    CreateHTTPReverseProxy = "CreateHTTPReverseProxy"
+    DeleteHTTPReverseProxy = "DeleteHTTPReverseProxy"
+    UpdateHTTPReverseProxy = "UpdateHTTPReverseProxy"
+    GetHTTPReverseProxy = "GetHTTPReverseProxy"
 
 
 async def serve():
@@ -33,53 +27,28 @@ async def serve():
     async def list_tools() -> list[Tool]:
         return [
             Tool(
-                name=EasegressTools.ListHTTPServers,
-                description="List all HTTP servers.",
+                name=EasegressTools.ListHTTPReverseProxies,
+                description="List all HTTP Reverse Proxies.",
                 inputSchema=schema.EmptySchema.model_json_schema(),
             ),
             Tool(
-                name=EasegressTools.CreateHTTPServer,
-                description="Create an HTTP server.",
-                inputSchema=schema.HTTPServerSchema.model_json_schema(),
+                name=EasegressTools.CreateHTTPReverseProxy,
+                description="Create a new HTTP Reverse Proxy.",
+                inputSchema=schema.HTTPReverseProxy.model_json_schema(),
             ),
             Tool(
-                name=EasegressTools.DeleteHTTPServer,
-                description="Delete an HTTP server.",
+                name=EasegressTools.DeleteHTTPReverseProxy,
+                description="Delete an HTTP Reverse Proxy.",
                 inputSchema=schema.NameSchema.model_json_schema(),
             ),
             Tool(
-                name=EasegressTools.UpdateHTTPServer,
-                description="Update an HTTP server.",
-                inputSchema=schema.HTTPServerSchema.model_json_schema(),
+                name=EasegressTools.UpdateHTTPReverseProxy,
+                description="Update an HTTP Reverse Proxy.",
+                inputSchema=schema.HTTPReverseProxy.model_json_schema(),
             ),
             Tool(
-                name=EasegressTools.GetHTTPServer,
-                description="Get an HTTP server.",
-                inputSchema=schema.NameSchema.model_json_schema(),
-            ),
-            Tool(
-                name=EasegressTools.ListProxyPipelines,
-                description="List all Proxy Pipelines.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
-            ),
-            Tool(
-                name=EasegressTools.CreateProxyPipeline,
-                description="Create a Proxy Pipeline.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
-            ),
-            Tool(
-                name=EasegressTools.DeleteProxyPipeline,
-                description="Delete a Proxy Pipeline.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
-            ),
-            Tool(
-                name=EasegressTools.UpdateProxyPipeline,
-                description="Update a Proxy Pipeline.",
-                inputSchema=schema.EmptySchema.model_json_schema(),
-            ),
-            Tool(
-                name=EasegressTools.GetProxyPipeline,
-                description="Get a Proxy Pipeline.",
+                name=EasegressTools.GetHTTPReverseProxy,
+                description="Get an HTTP Reverse Proxy.",
                 inputSchema=schema.NameSchema.model_json_schema(),
             ),
         ]
@@ -88,44 +57,24 @@ async def serve():
     async def call_tool(name: str, arguments: dict) -> List[TextContent]:
         logger.info(f"Call tool: {name}, arguments: {arguments}")
 
-        if name == EasegressTools.ListHTTPServers:
-            resp = await egapis.list_HTTPServers()
+        if name == EasegressTools.ListHTTPReverseProxies:
+            resp = await tools.list_http_reverse_proxies()
             return utils.to_textcontent(resp)
 
-        elif name == EasegressTools.CreateHTTPServer:
-            resp = await egapis.create_HTTPServer(arguments)
+        elif name == EasegressTools.CreateHTTPReverseProxy:
+            resp = await tools.create_http_reverse_proxy(arguments)
             return utils.to_textcontent(resp)
 
-        elif name == EasegressTools.DeleteHTTPServer:
-            resp = await egapis.delete_HTTPServer(arguments)
+        elif name == EasegressTools.DeleteHTTPReverseProxy:
+            resp = await tools.delete_http_reverse_proxy(arguments)
             return utils.to_textcontent(resp)
 
-        elif name == EasegressTools.UpdateHTTPServer:
-            resp = await egapis.update_HTTPServer(arguments)
+        elif name == EasegressTools.UpdateHTTPReverseProxy:
+            resp = await tools.update_http_reverse_proxy(arguments)
             return utils.to_textcontent(resp)
 
-        elif name == EasegressTools.GetHTTPServer:
-            resp = await egapis.get_HTTPServer(arguments)
-            return utils.to_textcontent(resp)
-
-        elif name == EasegressTools.ListProxyPipelines:
-            resp = await egapis.list_ProxyPipelines()
-            return utils.to_textcontent(resp)
-
-        elif name == EasegressTools.CreateProxyPipeline:
-            resp = await egapis.create_ProxyPipeline(arguments)
-            return utils.to_textcontent(resp)
-
-        elif name == EasegressTools.DeleteProxyPipeline:
-            resp = await egapis.delete_ProxyPipeline(arguments)
-            return utils.to_textcontent(resp)
-
-        elif name == EasegressTools.UpdateProxyPipeline:
-            resp = await egapis.update_ProxyPipeline(arguments)
-            return utils.to_textcontent(resp)
-
-        elif name == EasegressTools.GetProxyPipeline:
-            resp = await egapis.get_ProxyPipeline(arguments)
+        elif name == EasegressTools.GetHTTPReverseProxy:
+            resp = await tools.get_http_reverse_proxy(arguments)
             return utils.to_textcontent(resp)
 
         else:

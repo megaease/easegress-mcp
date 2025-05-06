@@ -7,7 +7,7 @@ import settings
 urlPrefix = f"{settings.EG_API_ADDRESS}/apis/v1"
 
 
-async def list_HTTPServers():
+async def list_http_servers():
     url = f"{urlPrefix}/objects"
     logger.info(f"Getting {url}")
     response = await async_client.get(url)
@@ -18,7 +18,7 @@ async def list_HTTPServers():
     return result
 
 
-async def get_HTTPServer(arguments: Dict):
+async def get_http_server(arguments: Dict):
     name = arguments.get("name")
     if not name:
         raise ValueError("name is required")
@@ -34,7 +34,7 @@ async def get_HTTPServer(arguments: Dict):
     return result
 
 
-async def create_HTTPServer(arguments: Dict):
+async def create_http_server(arguments: Dict):
     try:
         http_server = schema.HTTPServerSchema(**arguments)
         url = f"{urlPrefix}/objects"
@@ -51,7 +51,7 @@ async def create_HTTPServer(arguments: Dict):
         raise Exception(f"create HTTPServer {url} {data}: {e}")
 
 
-async def update_HTTPServer(arguments: Dict):
+async def update_http_server(arguments: Dict):
     name = arguments.get("name")
     if not name:
         raise ValueError("name is required")
@@ -71,7 +71,7 @@ async def update_HTTPServer(arguments: Dict):
         raise Exception(f"update HTTPServer {url} {data}: {e}")
 
 
-async def delete_HTTPServer(arguments: Dict):
+async def delete_http_server(arguments: Dict):
     name = arguments.get("name")
     if not name:
         raise ValueError("name is required")
@@ -86,21 +86,21 @@ async def delete_HTTPServer(arguments: Dict):
     raise Exception(f"DELETE {url} Error: {response.status_code} - {response.text}")
 
 
-async def list_ProxyPipelines():
+async def list_pipelines():
     pass
 
 
-async def get_ProxyPipeline(arguments: Dict):
+async def get_pipeline(arguments: Dict):
     pass
 
 
-async def create_ProxyPipeline(arguments: Dict):
+async def create_pipeline(arguments: Dict):
     pass
 
 
-async def update_ProxyPipeline(aryguments: Dict):
+async def update_pipeline(aryguments: Dict):
     pass
 
 
-async def delete_ProxyPipeline(arguments: Dict):
+async def delete_pipeline(arguments: Dict):
     pass

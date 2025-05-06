@@ -72,5 +72,17 @@ class HTTPServerSchema(BaseModel):
     accessLogFormat: Optional[str] = None
 
 
-class ProxyPipeline(BaseModel):
-    pass
+class LetsEncryptSchema(BaseModel):
+    letsEncrypt: bool = False
+    letsEncryptEmail: str = ""
+    letsEncryptDomainName: str = ""
+
+
+class HTTPReverseProxy(BaseModel):
+    name: str
+    port: int
+
+    host: str = ""
+    path: str
+    IsPathPrefix: bool = False
+    endpoints: List[str] = []
