@@ -34,7 +34,7 @@ async def serve():
             Tool(
                 name=EasegressTools.CreateHTTPReverseProxy,
                 description="Create a new HTTP Reverse Proxy.",
-                inputSchema=schema.HTTPReverseProxy.model_json_schema(),
+                inputSchema=schema.HTTPReverseProxySchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.DeleteHTTPReverseProxy,
@@ -44,7 +44,7 @@ async def serve():
             Tool(
                 name=EasegressTools.UpdateHTTPReverseProxy,
                 description="Update an HTTP Reverse Proxy.",
-                inputSchema=schema.HTTPReverseProxy.model_json_schema(),
+                inputSchema=schema.HTTPReverseProxySchema.model_json_schema(),
             ),
             Tool(
                 name=EasegressTools.GetHTTPReverseProxy,

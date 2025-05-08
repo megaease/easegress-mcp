@@ -44,7 +44,7 @@ class Rule(BaseModel):
     paths: Optional[List[Path]] = None
 
 
-class HTTPServerSchema(BaseModel):
+class HTTPServer(BaseModel):
     # Required field
     kind: str = "HTTPServer"
     name: str
@@ -72,17 +72,46 @@ class HTTPServerSchema(BaseModel):
     accessLogFormat: Optional[str] = None
 
 
+class PipelineFlowNode(BaseModel):
+    filter: str
+    # jumpIf
+
+
+class PipelineFilter(BaseModel):
+    name: str
+    kind: str
+
+
+class PoolServer(BaseModel):
+    url: str
+
+
+class ProxyPool(BaseModel):
+    servers: List[PoolServer]
+
+
+class ProxyFilter(PipelineFilter):
+    pools: List[ProxyPool]
+
+
+class Pipeline(BaseModel):
+    name: str
+    kind: str = "Pipeline"
+    flow: List[PipelineFlowNode]
+    filters: List[PipelineFilter]
+
+
 class LetsEncryptSchema(BaseModel):
     letsEncrypt: bool = False
     letsEncryptEmail: str = ""
     letsEncryptDomainName: str = ""
 
 
-class HTTPReverseProxy(BaseModel):
-    name: str
-    port: int
+class HTTPReverseProxySchema(BaseModel):
+    name: str = "default_proxy"
+    port: int = 80
 
     host: str = ""
-    path: str
-    IsPathPrefix: bool = False
+    path: str = "/"
+    isPathPrefix: bool = False
     endpoints: List[str] = []
