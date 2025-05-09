@@ -19,6 +19,11 @@ class EasegressTools(str, Enum):
     UpdateHTTPReverseProxy = "UpdateHTTPReverseProxy"
     GetHTTPReverseProxy = "GetHTTPReverseProxy"
 
+    CreateLetsEncrypt = "CreateLetsEncrypt"
+    DeleteLetsEncrypt = "DeleteLetsEncrypt"
+    UpdateLetsEncrypt = "UpdateLetsEncrypt"
+    GetLetsEncrypt = "GetLetsEncrypt"
+
 
 async def serve():
     server = Server("Easegress")
@@ -51,6 +56,26 @@ async def serve():
                 description="Get an HTTP Reverse Proxy.",
                 inputSchema=schema.NameSchema.model_json_schema(),
             ),
+            Tool(
+                name=EasegressTools.CreateLetsEncrypt,
+                description="Create a new Let's Encrypt configuration.",
+                inputSchema=schema.LetsEncryptSchema.model_json_schema(),
+            ),
+            Tool(
+                name=EasegressTools.DeleteLetsEncrypt,
+                description="Delete a Let's Encrypt configuration.",
+                inputSchema=schema.NameSchema.model_json_schema(),
+            ),
+            Tool(
+                name=EasegressTools.UpdateLetsEncrypt,
+                description="Update a Let's Encrypt configuration.",
+                inputSchema=schema.LetsEncryptSchema.model_json_schema(),
+            ),
+            Tool(
+                name=EasegressTools.GetLetsEncrypt,
+                description="Get a Let's Encrypt configuration.",
+                inputSchema=schema.NameSchema.model_json_schema(),
+            ),
         ]
 
     @server.call_tool()
@@ -75,6 +100,22 @@ async def serve():
 
         elif name == EasegressTools.GetHTTPReverseProxy:
             resp = await tools.get_http_reverse_proxy(arguments)
+            return utils.to_textcontent(resp)
+
+        elif name == EasegressTools.CreateLetsEncrypt:
+            resp = await tools.create_lets_encrypt(arguments)
+            return utils.to_textcontent(resp)
+
+        elif name == EasegressTools.DeleteLetsEncrypt:
+            resp = await tools.delete_lets_encrypt(arguments)
+            return utils.to_textcontent(resp)
+
+        elif name == EasegressTools.UpdateLetsEncrypt:
+            resp = await tools.update_lets_encrypt(arguments)
+            return utils.to_textcontent(resp)
+
+        elif name == EasegressTools.GetLetsEncrypt:
+            resp = await tools.get_lets_encrypt(arguments)
             return utils.to_textcontent(resp)
 
         else:

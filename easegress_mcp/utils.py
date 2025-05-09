@@ -1,5 +1,5 @@
 import secrets
-from typing import Any, List, Sequence
+from typing import Any, List
 
 from pydantic import BaseModel
 from mcp.types import TextContent

@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from pydantic import BaseModel
 
 
@@ -12,8 +12,8 @@ class NameSchema(BaseModel):
 
 class IPFilter(BaseModel):
     blockByDefault: Optional[bool] = None
-    allowIPs: Optional[List[str]] = None
-    blockIPs: Optional[List[str]] = None
+    allowIPs: Optional[list[str]] = None
+    blockIPs: Optional[list[str]] = None
 
 
 class Host(BaseModel):
@@ -27,11 +27,11 @@ class Path(BaseModel):
     pathPrefix: Optional[str] = None
     pathRegexp: Optional[str] = None
     rewriteTarget: Optional[str] = None
-    methods: Optional[List[str]] = None
+    methods: Optional[list[str]] = None
     backend: Optional[str] = None
     clientMaxBodySize: Optional[int] = None
-    headers: Optional[List[Dict]] = None
-    queries: Optional[List[Dict]] = None
+    headers: Optional[list[Dict]] = None
+    queries: Optional[list[Dict]] = None
     matchAllHeader: Optional[bool] = None
     matchAllQuery: Optional[bool] = None
 
@@ -40,8 +40,8 @@ class Rule(BaseModel):
     ipFilter: Optional[Dict] = None
     host: Optional[str] = None
     hostRegexp: Optional[str] = None
-    hosts: Optional[List[Host]] = None
-    paths: Optional[List[Path]] = None
+    hosts: Optional[list[Host]] = None
+    paths: Optional[list[Path]] = None
 
 
 class HTTPServer(BaseModel):
@@ -67,7 +67,7 @@ class HTTPServer(BaseModel):
     keys: Optional[Dict[str, str]] = None
     routerKind: Optional[str] = None
     ipFilter: Optional[IPFilter] = None
-    rules: Optional[List[Rule]] = None
+    rules: Optional[list[Rule]] = None
     globalFilter: Optional[str] = None
     accessLogFormat: Optional[str] = None
 
@@ -78,8 +78,8 @@ class PipelineFlowNode(BaseModel):
 
 
 class PipelineFilter(BaseModel):
-    name: str
     kind: str
+    name: str
 
 
 class PoolServer(BaseModel):
@@ -87,24 +87,48 @@ class PoolServer(BaseModel):
 
 
 class ProxyPool(BaseModel):
-    servers: List[PoolServer]
+    servers: list[PoolServer]
 
 
 class ProxyFilter(PipelineFilter):
-    pools: List[ProxyPool]
+    pools: list[ProxyPool]
 
 
 class Pipeline(BaseModel):
     name: str
     kind: str = "Pipeline"
-    flow: List[PipelineFlowNode]
-    filters: List[PipelineFilter]
+    flow: Optional[list[PipelineFlowNode]] = None
+    filters: Optional[list[PipelineFilter]] = None
+
+
+# Use common simplest fields for the time being
+class AutoCertDNSProvider(BaseModel):
+    name: str
+    zone: str
+    apiToken: str
+
+
+class AutoCertDomain(BaseModel):
+    name: str
+    dnsProvider: AutoCertDNSProvider
+
+
+class AutoCertManager(BaseModel):
+    name: str
+    kind: str = "AutoCertManager"
+    email: str
+    enableHTTP01: bool = True
+    enableDNS01: bool = True
+    enableTLSALPN01: bool = True
+    domains: list[AutoCertDomain]
 
 
 class LetsEncryptSchema(BaseModel):
-    letsEncrypt: bool = False
     letsEncryptEmail: str = ""
     letsEncryptDomainName: str = ""
+    DNSProviderName: str = ""
+    DNSProviderZone: str = ""
+    DNSProviderAPIToken: str = ""
 
 
 class HTTPReverseProxySchema(BaseModel):
@@ -114,4 +138,4 @@ class HTTPReverseProxySchema(BaseModel):
     host: str = ""
     path: str = "/"
     isPathPrefix: bool = False
-    endpoints: List[str] = []
+    endpoints: list[str] = []

@@ -8,7 +8,7 @@ import settings
 urlPrefix = f"{settings.EG_API_ADDRESS}/apis/v1"
 
 
-async def list_http_servers() -> List[schema.HTTPServer]:
+async def list_http_servers() -> list[schema.HTTPServer]:
     url = f"{urlPrefix}/objects"
     logger.info(f"Getting {url}")
     response = await async_client.get(url)
@@ -73,7 +73,7 @@ async def delete_http_server(name: str):
     logger.info(f"HTTPServer deleted successfully at {url}")
 
 
-async def list_pipelines() -> List[schema.Pipeline]:
+async def list_pipelines() -> list[schema.Pipeline]:
     url = f"{urlPrefix}/objects"
     logger.info(f"Getting {url}")
     response = await async_client.get(url)
@@ -89,8 +89,8 @@ async def list_pipelines() -> List[schema.Pipeline]:
     return result
 
 
-async def get_pipeline(arguments: Dict) -> schema.Pipeline:
-    url = f"{urlPrefix}/objects/{arguments['name']}"
+async def get_pipeline(name: str) -> schema.Pipeline:
+    url = f"{urlPrefix}/objects/{name}"
     logger.info(f"Getting {url}")
 
     response = await async_client.get(url)
@@ -99,41 +99,41 @@ async def get_pipeline(arguments: Dict) -> schema.Pipeline:
 
     result = schema.Pipeline(**response.json())
     if result.get("kind") != "Pipeline":
-        raise Exception(f"Object with name {arguments['name']} is not a Pipeline")
+        raise Exception(f"Object with name {name} is not a Pipeline")
 
     return result
 
 
-async def create_pipeline(arguments: Dict):
+async def create_pipeline(pipeline: schema.Pipeline):
     url = f"{urlPrefix}/objects"
-    data = schema.Pipeline(**arguments).model_dump_json(exclude_none=True)
+    data = pipeline.model_dump_json(exclude_none=True)
     logger.info(f"POST {url} with data: {data}")
     response = await async_client.post(url, data=data)
 
     if response.status_code != 201:
         raise HTTPError(url, response.status_code, response.text, None, None)
 
-    logger.info(f"Pipeline {arguments['name']} created successfully at {url}")
+    logger.info(f"Pipeline {pipeline.name} created successfully at {url}")
 
 
-async def update_pipeline(aryguments: Dict):
-    url = f"{urlPrefix}/objects/{aryguments['name']}"
-    data = schema.Pipeline(**aryguments).model_dump_json(exclude_none=True)
+async def update_pipeline(pipeline: schema.Pipeline):
+    url = f"{urlPrefix}/objects/{pipeline.name}"
+    data = pipeline.model_dump_json(exclude_none=True)
     logger.info(f"PUT {url} with data: {data}")
     response = await async_client.put(url, data=data)
 
     if response.status_code != 200:
         raise HTTPError(url, response.status_code, response.text, None, None)
 
-    logger.info(f"Pipeline {aryguments['name']} updated successfully at {url}")
+    logger.info(f"Pipeline {pipeline.name} updated successfully at {url}")
 
 
-async def delete_pipeline(arguments: Dict):
-    url = f"{urlPrefix}/objects/{arguments['name']}"
+async def delete_pipeline(name: str):
+    url = f"{urlPrefix}/objects/{name}"
     logger.info(f"DELETE {url}")
     response = await async_client.delete(url)
 
     if response.status_code != 200:
         raise HTTPError(url, response.status_code, response.text, None, None)
 
-    logger.info(f"Pipeline {arguments['name']} deleted successfully at {url}")
+    logger.info(f"Pipeline {name} deleted successfully at {url}")
