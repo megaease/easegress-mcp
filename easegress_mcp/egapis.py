@@ -109,7 +109,7 @@ async def get_pipeline(name: str) -> schema.Pipeline:
 
 async def create_pipeline(pipeline: schema.Pipeline):
     url = f"{urlPrefix}/objects"
-    data = pipeline.model_dump_json(exclude_none=True, indent=2)
+    data = pipeline.model_dump_json(exclude_none=True)
 
     print(f"create_pipeline body: {data}")
 
@@ -143,3 +143,57 @@ async def delete_pipeline(name: str):
         raise HTTPError(url, response.status_code, response.text, None, None)
 
     logger.info(f"Pipeline {name} deleted successfully at {url}")
+
+
+async def get_auto_cert_manager() -> schema.AutoCertManager:
+    url = f"{urlPrefix}/objects/AutoCertManager"
+    logger.info(f"Getting {url}")
+    response = await async_client.get(url)
+
+    if response.status_code != 200:
+        raise HTTPError(url, response.status_code, response.text, None, None)
+
+    result = schema.AutoCertManager(**response.json())
+    if result.kind != "AutoCertManager":
+        raise Exception("Object with name AutoCertManager is not an AutoCertManager")
+
+    return result
+
+
+async def create_auto_cert_manager(auto_cert_manager: schema.AutoCertManager):
+    url = f"{urlPrefix}/objects"
+    data = auto_cert_manager.model_dump_json(exclude_none=True)
+    logger.info(f"POST {url} with data: {data}")
+    response = await async_client.post(url, data=data)
+
+    if response.status_code != 201:
+        raise HTTPError(url, response.status_code, response.text, None, None)
+
+    logger.info(
+        f"AutoCertManager {auto_cert_manager.name} created successfully at {url}"
+    )
+
+
+async def update_auto_cert_manager(auto_cert_manager: schema.AutoCertManager):
+    url = f"{urlPrefix}/objects/AutoCertManager"
+    data = auto_cert_manager.model_dump_json(exclude_none=True)
+    logger.info(f"PUT {url} with data: {data}")
+    response = await async_client.put(url, data=data)
+
+    if response.status_code != 200:
+        raise HTTPError(url, response.status_code, response.text, None, None)
+
+    logger.info(
+        f"AutoCertManager {auto_cert_manager.name} updated successfully at {url}"
+    )
+
+
+async def delete_auto_cert_manager():
+    url = f"{urlPrefix}/objects/AutoCertManager"
+    logger.info(f"DELETE {url}")
+    response = await async_client.delete(url)
+
+    if response.status_code != 200:
+        raise HTTPError(url, response.status_code, response.text, None, None)
+
+    logger.info(f"AutoCertManager deleted successfully at {url}")

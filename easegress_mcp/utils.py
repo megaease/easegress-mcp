@@ -12,7 +12,14 @@ def generate_name(prefix: str):
 
 
 def to_textcontent(model: Any) -> List[TextContent]:
-    if isinstance(model, list) and len(model) > 0 and isinstance(model[0], BaseModel):
+    if model is None:
+        return [
+            TextContent(
+                type="text",
+                text="OK",
+            )
+        ]
+    elif isinstance(model, list) and len(model) > 0 and isinstance(model[0], BaseModel):
         return [
             TextContent(
                 type="text",

@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from easegress_mcp import tools
 
 
-async def debug():
+async def debug_proxy():
     # Step 1: Create three HTTP reverse proxies
     proxy1 = {
         "name": "proxy1",
@@ -40,7 +40,7 @@ async def debug():
     # Step 2: Update one of the proxies
     updated_proxy2 = {
         "name": "proxy2",
-        "port": 8082,
+        "port": 8080,
         "host": "localhost",
         "path": "/service2-updated",
         "isPathPrefix": True,
@@ -70,8 +70,40 @@ async def debug():
     await tools.create_http_reverse_proxy(arguments)
 
 
+async def debug_lets_encrypt():
+    lets_encrypt_config = {
+        "email": "service@megaease.com",
+        "domainName": "mcp.megaease.com",
+        "dnsProviderName": "cloudflare",
+        "dnsProviderZone": "megaease.com",
+        "dnsProviderAPIToken": "token-001",
+    }
+
+    # Step 1: Create a Let's Encrypt configuration
+    await tools.apply_lets_encrypt(lets_encrypt_config)
+
+    # Step 2: Update the Let's Encrypt configuration
+    updated_lets_encrypt_config = {
+        "email": "service-updated@megaease.com",
+        "domainName": "mcp-updated.megaease.com",
+        "dnsProviderName": "cloudflare",
+        "dnsProviderZone": "updated.megaease.com",
+        "dnsProviderAPIToken": "updated-token-001",
+    }
+
+    await tools.apply_lets_encrypt(updated_lets_encrypt_config)
+
+    # Step 3: Get the current Let's Encrypt configuration
+    lets_encrypt_details = await tools.get_lets_encrypt({})
+    print("Let's Encrypt Details:", lets_encrypt_details)
+
+    # Step 4: Delete the Let's Encrypt configuration
+    await tools.delete_lets_encrypt({})
+
+
 if __name__ == "__main__":
     # Use asyncio.run to execute the async debug function
     import asyncio  # Import asyncio to run the async function
 
-    asyncio.run(debug())
+    # asyncio.run(debug_proxy())
+    asyncio.run(debug_lets_encrypt())

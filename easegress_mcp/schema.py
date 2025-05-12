@@ -1,5 +1,6 @@
 from typing import Optional, Dict
 from pydantic import BaseModel
+from enum import Enum
 
 
 class EmptySchema(BaseModel):
@@ -126,15 +127,23 @@ class AutoCertManager(BaseModel):
     enableHTTP01: bool = True
     enableDNS01: bool = True
     enableTLSALPN01: bool = True
-    domains: list[AutoCertDomain]
+    domains: list[AutoCertDomain] = []
 
 
 class LetsEncryptSchema(BaseModel):
-    letsEncryptEmail: str = ""
-    letsEncryptDomainName: str = ""
-    DNSProviderName: str = ""
-    DNSProviderZone: str = ""
-    DNSProviderAPIToken: str = ""
+    email: str = ""
+    domainName: str = ""
+
+    class DNSProviderNameEnum(str, Enum):
+        cloudflare = "cloudflare"
+        digitalocean = "digitalocean"
+        dnspod = "dnspod"
+        duckdns = "duckdns"
+        vultr = "vultr"
+
+    dnsProviderName: DNSProviderNameEnum = DNSProviderNameEnum.cloudflare
+    dnsProviderZone: str = ""
+    dnsProviderAPIToken: str = ""
 
 
 class HTTPReverseProxySchema(BaseModel):
