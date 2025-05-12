@@ -39,22 +39,31 @@ async def mount_http_reverse_proxy(http_reverse_proxy: schema.HTTPReverseProxySc
     if not pipeline:
         raise HTTPError(f"Pipeline {pipeline_name} not found")
 
-    for rule in http_server.rules:
-        for path in rule.paths:
-            if path.backend == pipeline.name:
-                return
-
-    rule = schema.Rule(
+    pipeline_rule = schema.Rule(
         host=http_reverse_proxy.host,
         paths=[
             schema.Path(
-                path=http_reverse_proxy.path,
-                pathPrefix=http_reverse_proxy.isPathPrefix,
+                path=http_reverse_proxy.path
+                if not http_reverse_proxy.isPathPrefix
+                else "",
+                pathPrefix=http_reverse_proxy.path
+                if http_reverse_proxy.isPathPrefix
+                else "",
                 backend=pipeline.name,
             )
         ],
     )
-    http_server.rules.append(rule)
+
+    for rule in http_server.rules:
+        for path in rule.paths:
+            if path.backend == pipeline.name:
+                rule.host = pipeline_rule.host
+                rule.paths = pipeline_rule.paths
+                await egapis.update_http_server(http_server)
+                return
+
+    http_server.rules.append(pipeline_rule)
+
     await egapis.update_http_server(http_server)
 
 
@@ -69,8 +78,16 @@ async def unmount_http_reverse_proxy(http_reverse_proxy: schema.HTTPReverseProxy
     for rule in http_server.rules:
         for path in rule.paths:
             if path.backend == pipeline_name:
-                rule.paths.remove(path)
+                http_server.rules.remove(rule)
                 break
+
+    if (
+        http_server.name.startswith(mcp_http_server_name_prefix)
+        and len(http_server.rules) == 0
+    ):
+        print(f"HTTP server {http_server.name} has no rules, deleting it")
+        await egapis.delete_http_server(http_server.name)
+        return
 
     await egapis.update_http_server(http_server)
 
@@ -80,32 +97,37 @@ async def list_http_reverse_proxies() -> list[schema.HTTPReverseProxySchema]:
     pipelines = await egapis.list_pipelines()
     http_reverse_proxies = []
 
-    for http_server in http_servers:
-        if not http_server.name.startswith(mcp_http_server_name_prefix):
+    for pipeline in pipelines:
+        if not pipeline.name.startswith(mcp_pipeline_name_prefix):
             continue
 
-        for pipeline in pipelines:
-            if not pipeline.name.startswith(mcp_pipeline_name_prefix):
+        for http_server in http_servers:
+            if not http_server.name.startswith(mcp_http_server_name_prefix):
                 continue
 
-            rule_host, rule_path, isPathPrefix = None, None, False
+            rule_host, rule_path, isPathPrefix = "", "", False
+            found = False
             for rule in http_server.rules:
                 for path in rule.paths:
                     if path.backend != pipeline.name:
                         continue
+                    found = True
                     rule_host = rule.host
                     rule_path = path.path
-                    if path.pathPrefix is not None:
+                    if len(path.pathPrefix) > 0:
                         rule_path = path.pathPrefix
                         isPathPrefix = True
 
+            if not found:
+                continue
+
             endpoints = []
             for filter in pipeline.filters:
-                if filter.kind != "Proxy":
+                if filter["kind"] != "Proxy":
                     continue
-                for pool in filter.pools:
-                    for server in pool.servers:
-                        endpoints.append(server.url)
+                for pool in filter["pools"]:
+                    for server in pool["servers"]:
+                        endpoints.append(server["url"])
 
             http_reverse_proxies.append(
                 schema.HTTPReverseProxySchema(
@@ -124,7 +146,7 @@ async def create_http_reverse_proxy(arguments: dict):
     http_reverse_proxy = schema.HTTPReverseProxySchema(**arguments)
     pipeline_name = mcp_pipeline_name_prefix + http_reverse_proxy.name
 
-    guarantee_http_server_exists(http_reverse_proxy.port)
+    await guarantee_http_server_exists(http_reverse_proxy.port)
 
     try:
         pipeline = await egapis.get_pipeline(pipeline_name)
@@ -139,61 +161,63 @@ async def create_http_reverse_proxy(arguments: dict):
                     )
                 ],
                 filters=[
-                    schema.ProxyFilter(
-                        kind="Proxy",
-                        name=mcp_proxy_filter_name,
-                        pools=[
-                            schema.ProxyPool(
-                                servers=[
+                    {
+                        "kind": "Proxy",
+                        "name": mcp_proxy_filter_name,
+                        "pools": [
+                            {
+                                "servers": [
                                     schema.PoolServer(url=url)
                                     for url in http_reverse_proxy.endpoints
                                 ]
-                            )
+                            }
                         ],
-                    )
+                    }
                 ],
             )
-
             await egapis.create_pipeline(pipeline)
-            mount_http_reverse_proxy(http_reverse_proxy)
         else:
             raise
+
+    await mount_http_reverse_proxy(http_reverse_proxy)
 
 
 async def delete_http_reverse_proxy(arguments: dict):
-    http_reverse_proxy = schema.HTTPReverseProxySchema(**arguments)
-    http_server_name = mcp_http_server_name_prefix + str(http_reverse_proxy.port)
-    pipeline_name = mcp_pipeline_name_prefix + http_reverse_proxy.name
+    name = arguments["name"]
+    pipeline_name = mcp_pipeline_name_prefix + name
+    http_servers = await egapis.list_http_servers()
 
-    try:
-        unmount_http_reverse_proxy(http_reverse_proxy)
-        await egapis.delete_pipeline(pipeline_name)
-    except HTTPError as e:
-        if e.code == 404:
-            pass
-        else:
-            raise
-
-    http_server = await egapis.get_http_server(http_server_name)
-    if len(http_server) == 0:
-        await egapis.delete_http_server(http_server_name)
+    await egapis.delete_pipeline(pipeline_name)
+    for http_server in http_servers:
+        http_reverse_proxy = schema.HTTPReverseProxySchema(
+            name=name,
+            port=http_server.port,
+        )
+        await unmount_http_reverse_proxy(http_reverse_proxy)
 
 
 async def update_http_reverse_proxy(arguments: dict):
     http_reverse_proxy = schema.HTTPReverseProxySchema(**arguments)
     pipeline_name = mcp_pipeline_name_prefix + http_reverse_proxy.name
 
-    try:
-        pipeline = await egapis.get_pipeline(pipeline_name)
-        pipeline.filters[0].pools[0].servers = [
-            schema.PoolServer(url=url) for url in http_reverse_proxy.endpoints
+    await delete_http_reverse_proxy({"name": http_reverse_proxy.name})
+    await create_http_reverse_proxy(arguments)
+    return
+
+    pipeline = await egapis.get_pipeline(pipeline_name)
+    for filter in pipeline.filters:
+        if filter["kind"] != "Proxy":
+            continue
+        filter["pools"] = [
+            {
+                "servers": [
+                    schema.PoolServer(url=url) for url in http_reverse_proxy.endpoints
+                ]
+            }
         ]
-        await egapis.update_pipeline(pipeline)
-    except HTTPError as e:
-        if e.code == 404:
-            raise
-        else:
-            raise
+    await egapis.update_pipeline(pipeline)
+    await guarantee_http_server_exists(http_reverse_proxy.port)
+    await mount_http_reverse_proxy(http_reverse_proxy)
 
 
 async def get_http_reverse_proxy(arguments: dict) -> schema.HTTPReverseProxySchema:

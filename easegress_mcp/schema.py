@@ -22,13 +22,15 @@ class Host(BaseModel):
 
 
 class Path(BaseModel):
+    path: str = ""
+    pathPrefix: str = ""
+    backend: str = ""
+
+    # Placeholders for future use
     ipFilter: Optional[IPFilter] = None
-    path: Optional[str] = None
-    pathPrefix: Optional[str] = None
     pathRegexp: Optional[str] = None
     rewriteTarget: Optional[str] = None
     methods: Optional[list[str]] = None
-    backend: Optional[str] = None
     clientMaxBodySize: Optional[int] = None
     headers: Optional[list[Dict]] = None
     queries: Optional[list[Dict]] = None
@@ -37,11 +39,13 @@ class Path(BaseModel):
 
 
 class Rule(BaseModel):
+    host: str = ""
+    paths: list[Path] = []
+
+    # Placeholders for future use
     ipFilter: Optional[Dict] = None
-    host: Optional[str] = None
     hostRegexp: Optional[str] = None
     hosts: Optional[list[Host]] = None
-    paths: Optional[list[Path]] = None
 
 
 class HTTPServer(BaseModel):
@@ -50,6 +54,9 @@ class HTTPServer(BaseModel):
     name: str
     port: int
 
+    rules: list[Rule] = []
+
+    # Placeholders for future use
     http3: Optional[bool] = None
     keepAlive: Optional[bool] = None
     https: Optional[bool] = None
@@ -67,7 +74,6 @@ class HTTPServer(BaseModel):
     keys: Optional[Dict[str, str]] = None
     routerKind: Optional[str] = None
     ipFilter: Optional[IPFilter] = None
-    rules: Optional[list[Rule]] = None
     globalFilter: Optional[str] = None
     accessLogFormat: Optional[str] = None
 
@@ -97,8 +103,8 @@ class ProxyFilter(PipelineFilter):
 class Pipeline(BaseModel):
     name: str
     kind: str = "Pipeline"
-    flow: Optional[list[PipelineFlowNode]] = None
-    filters: Optional[list[PipelineFilter]] = None
+    flow: list[PipelineFlowNode] = []
+    filters: list[dict] = []
 
 
 # Use common simplest fields for the time being

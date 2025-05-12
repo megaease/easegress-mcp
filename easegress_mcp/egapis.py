@@ -32,7 +32,7 @@ async def get_http_server(name: str) -> schema.HTTPServer:
         raise HTTPError(url, response.status_code, response.text, None, None)
 
     result = schema.HTTPServer(**response.json())
-    if result.get("kind") != "HTTPServer":
+    if result.kind != "HTTPServer":
         raise Exception(f"Object with name {name} is not an HTTPServer")
 
     return result
@@ -53,6 +53,9 @@ async def create_http_server(http_server: schema.HTTPServer):
 async def update_http_server(http_server: schema.HTTPServer):
     url = f"{urlPrefix}/objects/{http_server.name}"
     data = http_server.model_dump_json(exclude_none=True)
+
+    print(f"update_http_server body: {data}")
+
     logger.info(f"PUT {url} with data: {data}")
     response = await async_client.put(url, data=data)
 
@@ -98,7 +101,7 @@ async def get_pipeline(name: str) -> schema.Pipeline:
         raise HTTPError(url, response.status_code, response.text, None, None)
 
     result = schema.Pipeline(**response.json())
-    if result.get("kind") != "Pipeline":
+    if result.kind != "Pipeline":
         raise Exception(f"Object with name {name} is not a Pipeline")
 
     return result
@@ -106,7 +109,10 @@ async def get_pipeline(name: str) -> schema.Pipeline:
 
 async def create_pipeline(pipeline: schema.Pipeline):
     url = f"{urlPrefix}/objects"
-    data = pipeline.model_dump_json(exclude_none=True)
+    data = pipeline.model_dump_json(exclude_none=True, indent=2)
+
+    print(f"create_pipeline body: {data}")
+
     logger.info(f"POST {url} with data: {data}")
     response = await async_client.post(url, data=data)
 
