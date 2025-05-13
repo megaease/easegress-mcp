@@ -289,7 +289,11 @@ async def delete_lets_encrypt(arguments: dict):
     except HTTPError as e:
         if e.code == 404:
             raise HTTPError(
-                e.url, e.code, f"AutoCertManager {auto_cert_manager_name} not found"
+                e.url,
+                e.code,
+                f"AutoCertManager {auto_cert_manager_name} not found",
+                None,
+                None,
             )
         else:
             raise
@@ -300,7 +304,7 @@ async def get_lets_encrypt(arguments: dict) -> schema.AutoCertManager:
         auto_cert_manager = await egapis.get_auto_cert_manager()
     except HTTPError as e:
         if e.code == 404:
-            raise HTTPError(e.url, e.code, "AutoCertManager not found")
+            raise HTTPError(e.url, e.code, "AutoCertManager not found", None, None)
         else:
             raise
 
