@@ -1,5 +1,42 @@
 # Easegress MCP Server
 
+## Features
+
+- HTTP Reverse Proxy
+- Let's Encrypt
+
+## Setup
+
+### Install
+
+```bash
+git clone https://github.com/megaease/easegress-mcp.git
+pip install "mcp[cli]"
+```
+
+### Run on Cline
+
+Change `${absolute_dir}` to the absolute path of the project directory and add the config below to the Cline MCP Servers.
+
+```json
+{
+  "mcpServers": {
+    "easegress_server": {
+      "disabled": false,
+      "timeout": 60,
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${absolute_dir}/easegress-mcp",
+        "run",
+        "easegress_mcp/main.py"
+      ],
+      "env": {},
+      "transportType": "stdio"
+    },
+}
+```
+
 ## Prompt Examples
 
 ### HTTP Reverse Proxy
